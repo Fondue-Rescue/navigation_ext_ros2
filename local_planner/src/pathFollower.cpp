@@ -161,12 +161,10 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
     joyYaw = 0;
   }
 
-  if (joy->axes[4] < 0.1) {
-    autonomyMode = false;
-  } else if (joy->axes[4] > 0.1) {
-    autonomyMode = true;
-    joySpeed = autonomySpeed;
-  }
+  // Keep autonomy enabled regardless of the joystick axis override.
+  // The joystick velocity is handled separately by the twist mux.
+  autonomyMode = true;
+  joySpeed = autonomySpeed;
 
 }
 
@@ -259,7 +257,7 @@ int main(int argc, char** argv)
 
   auto subStop = nh->create_subscription<std_msgs::msg::Int8>("/stop", 5, stopHandler);
 
-  auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("/path_follower_cmd", 5);
+  auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("/nav_vel", 5);
 
   geometry_msgs::msg::TwistStamped cmd_vel;
   cmd_vel.header.frame_id = "base_link";
