@@ -259,7 +259,7 @@ int main(int argc, char** argv)
 
   auto subStop = nh->create_subscription<std_msgs::msg::Int8>("/stop", 5, stopHandler);
 
-  auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("/nav_vel_cmd", 5);
+  auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("/path_follower_cmd", 5);
 
   geometry_msgs::msg::TwistStamped cmd_vel;
   cmd_vel.header.frame_id = "base_link";
