@@ -936,7 +936,7 @@ int main(int argc, char** argv)
 
           sensor_msgs::msg::PointCloud2 freePaths2;
           pcl::toROSMsg(*freePaths, freePaths2);
-          freePaths2.header.stamp = nh->now();
+          freePaths2.header.stamp = rclcpp::Time(0, 0, RCL_ROS_TIME);
           freePaths2.header.frame_id = "base_link";
           pubFreePaths->publish(freePaths2);
           #endif
