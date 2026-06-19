@@ -233,18 +233,10 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 
   if (joy->axes[1] < 0 && !twoWayDrive) joySpeed = 0;
 
-  if (joy->axes[4] < 0.1) {
-    autonomyMode = false;
-  } else if (joy->axes[4] > 0.1){
-    autonomyMode = true;
-    joySpeed = autonomySpeed;
-  }
-
-  if (joy->axes[5] > -0.1) {
-    checkObstacle = true;
-  } else {
-    checkObstacle = false;
-  }
+  // Keep autonomy enabled regardless of the joystick axis override.
+  // The joystick velocity is handled separately by the twist mux.
+  autonomyMode = true;
+  joySpeed = autonomySpeed;
 }
 
 void goalHandler(const geometry_msgs::msg::PointStamped::ConstSharedPtr goal)
@@ -944,7 +936,7 @@ int main(int argc, char** argv)
 
           sensor_msgs::msg::PointCloud2 freePaths2;
           pcl::toROSMsg(*freePaths, freePaths2);
-          freePaths2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
+          freePaths2.header.stamp = nh->now();
           freePaths2.header.frame_id = "base_link";
           pubFreePaths->publish(freePaths2);
           #endif
@@ -978,7 +970,7 @@ int main(int argc, char** argv)
         freePaths->clear();
         sensor_msgs::msg::PointCloud2 freePaths2;
         pcl::toROSMsg(*freePaths, freePaths2);
-        freePaths2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
+        freePaths2.header.stamp = nh->now();
         freePaths2.header.frame_id = "base_link";
         pubFreePaths->publish(freePaths2);
         #endif
@@ -1000,7 +992,7 @@ int main(int argc, char** argv)
         freePaths->clear();
         sensor_msgs::msg::PointCloud2 freePaths2;
         pcl::toROSMsg(*freePaths, freePaths2);
-        freePaths2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
+        freePaths2.header.stamp = nh->now();
         freePaths2.header.frame_id = "base_link";
         pubFreePaths->publish(freePaths2);
         // #endif
