@@ -101,6 +101,8 @@ const int gridVoxelNumX = 161;
 const int gridVoxelNumY = 451;
 const int gridVoxelNum = gridVoxelNumX * gridVoxelNumY;
 
+bool returnedHomeStopped = false;
+
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloud(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloudCrop(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloudDwz(new pcl::PointCloud<pcl::PointXYZI>());
@@ -317,6 +319,11 @@ void checkObstacleHandler(const std_msgs::msg::Bool::ConstSharedPtr checkObs)
   }
 }
 
+void returnedHomeStoppedHandler(const std_msgs::msg::Bool::ConstSharedPtr msg)
+{
+  returnedHomeStopped = msg->data;
+}
+
 int readPlyHeader(FILE *filePtr)
 {
   char str[50];
@@ -495,6 +502,15 @@ void readCorrespondences()
   fclose(filePtr);
 }
 
+void pub_path(nav_msgs::msg::Path path, rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pubPath)
+{
+  if(returnedHomeStopped) return; // Stop publishing path if the vehicle has returned home and stopped.
+  path.header.stamp = nh->now();
+  path.header.frame_id = "map";
+  pubPath->publish(path);
+  
+}
+
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
@@ -598,6 +614,8 @@ int main(int argc, char** argv)
   auto subAddedObstacles = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/added_obstacles", 5, addedObstaclesHandler);
 
   auto subCheckObstacle = nh->create_subscription<std_msgs::msg::Bool>("/check_obstacle", 5, checkObstacleHandler);
+
+  auto subReturnedHomeStopped = nh->create_subscription<std_msgs::msg::Bool>("/returned_home_stopped", 5, returnedHomeStoppedHandler);
 
   auto pubPath = nh->create_publisher<nav_msgs::msg::Path>("/path", 5);
   nav_msgs::msg::Path path;
@@ -892,7 +910,8 @@ int main(int argc, char** argv)
 
           path.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
           path.header.frame_id = "base_link";
-          pubPath->publish(path);
+          //pubPath->publish(path);
+          pub_path(path, pubPath);
 
           #if PLOTPATHSET == 1
           freePaths->clear();
@@ -964,7 +983,8 @@ int main(int argc, char** argv)
 
         path.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
         path.header.frame_id = "base_link";
-        pubPath->publish(path);
+        //pubPath->publish(path);
+        pub_path(path, pubPath);
 
         #if PLOTPATHSET == 1
         freePaths->clear();
@@ -986,7 +1006,8 @@ int main(int argc, char** argv)
 
         path.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
         path.header.frame_id = "base_link";
-        pubPath->publish(path);
+        //pubPath->publish(path);
+        pub_path(path, pubPath);
 
         // #if PLOTPATHSET == 1
         freePaths->clear();
