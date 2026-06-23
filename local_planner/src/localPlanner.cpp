@@ -505,8 +505,6 @@ void readCorrespondences()
 void pub_path(nav_msgs::msg::Path path, rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pubPath)
 {
   if(returnedHomeStopped) return; // Stop publishing path if the vehicle has returned home and stopped.
-  path.header.stamp = nh->now();
-  path.header.frame_id = "map";
   pubPath->publish(path);
   
 }
