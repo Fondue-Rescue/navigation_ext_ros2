@@ -49,6 +49,7 @@ double vehicleLength = 0.6;
 double vehicleWidth = 0.6;
 double sensorOffsetX = 0;
 double sensorOffsetY = 0;
+double innerClearanceRadius = 0.15;
 bool twoWayDrive = true;
 double laserVoxelSize = 0.05;
 double terrainVoxelSize = 0.2;
@@ -97,7 +98,7 @@ float gridVoxelSize = 0.02;
 float searchRadius = 0.45;
 float gridVoxelOffsetX = 3.2;
 float gridVoxelOffsetY = 4.5;
-const int gridVoxelNumX = 161;
+const int gridVoxelNumX = 191;
 const int gridVoxelNumY = 451;
 const int gridVoxelNum = gridVoxelNumX * gridVoxelNumY;
 
@@ -519,6 +520,7 @@ int main(int argc, char** argv)
   nh->declare_parameter<double>("vehicleWidth", vehicleWidth);
   nh->declare_parameter<double>("sensorOffsetX", sensorOffsetX);
   nh->declare_parameter<double>("sensorOffsetY", sensorOffsetY);
+  nh->declare_parameter<double>("innerClearanceRadius", innerClearanceRadius);
   nh->declare_parameter<bool>("twoWayDrive", twoWayDrive);
   nh->declare_parameter<double>("laserVoxelSize", laserVoxelSize);
   nh->declare_parameter<double>("terrainVoxelSize", terrainVoxelSize);
@@ -559,6 +561,7 @@ int main(int argc, char** argv)
   nh->get_parameter("vehicleWidth", vehicleWidth);
   nh->get_parameter("sensorOffsetX", sensorOffsetX);
   nh->get_parameter("sensorOffsetY", sensorOffsetY);
+  nh->get_parameter("innerClearanceRadius", innerClearanceRadius);
   nh->get_parameter("twoWayDrive", twoWayDrive);
   nh->get_parameter("laserVoxelSize", laserVoxelSize);
   nh->get_parameter("terrainVoxelSize", terrainVoxelSize);
@@ -799,8 +802,9 @@ int main(int argc, char** argv)
               float x2 = cos(rotAng) * x + sin(rotAng) * y;
               float y2 = -sin(rotAng) * x + cos(rotAng) * y;
 
-              float scaleY = x2 / gridVoxelOffsetX + searchRadius / gridVoxelOffsetY 
-                             * (gridVoxelOffsetX - x2) / gridVoxelOffsetX;
+              float x2_clamped = x2 < 0.0 ? 0.0 : x2;
+              float scaleY = x2_clamped / gridVoxelOffsetX + searchRadius / gridVoxelOffsetY 
+                             * (gridVoxelOffsetX - x2_clamped) / gridVoxelOffsetX;
 
               int indX = int((gridVoxelOffsetX + gridVoxelSize / 2 - x2) / gridVoxelSize);
               int indY = int((gridVoxelOffsetY + gridVoxelSize / 2 - y2 / scaleY) / gridVoxelSize);
@@ -820,7 +824,7 @@ int main(int argc, char** argv)
             }
           }
 
-          if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || fabs(y) > vehicleWidth / pathScale / 2.0) && 
+          if (dis < diameter / pathScale && dis > innerClearanceRadius / pathScale && 
               (h > obstacleHeightThre || !useTerrainAnalysis) && checkRotObstacle) {
             float angObs = atan2(y, x) * 180.0 / PI;
             if (angObs > 0) {
