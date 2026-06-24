@@ -622,7 +622,7 @@ int main(int argc, char** argv)
   auto pubFreePaths = nh->create_publisher<sensor_msgs::msg::PointCloud2>("/free_paths", 2);
   #endif
 
-  //auto pubLaserCloud = nh->create_publisher<sensor_msgs::msg::PointCloud2> ("/stacked_scans", 2);
+  auto pubLaserCloud = nh->create_publisher<sensor_msgs::msg::PointCloud2> ("/stacked_scans", 2);
 
   RCLCPP_INFO(nh->get_logger(), "Reading path files.");
 
@@ -1017,11 +1017,11 @@ int main(int argc, char** argv)
         // #endif
       }
 
-      /*sensor_msgs::msg::PointCloud2 plannerCloud2;
+      sensor_msgs::msg::PointCloud2 plannerCloud2;
       pcl::toROSMsg(*plannerCloudCrop, plannerCloud2);
       plannerCloud2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
       plannerCloud2.header.frame_id = "base_link";
-      pubLaserCloud->publish(plannerCloud2);*/
+      pubLaserCloud->publish(plannerCloud2);
     }
 
 
